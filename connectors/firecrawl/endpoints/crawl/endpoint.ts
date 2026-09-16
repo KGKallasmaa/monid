@@ -152,7 +152,13 @@ export default defineEndpoint({
                     providerHttpStatus: 200,
                     output: {
                         status,
-                        message: typeof message === "string" && message !== ""
+                        // `error`, NOT `message`: the provider's fromError
+                        // reads $.error, so renaming the key here strands the
+                        // reason in `raw` and publishes the generic fallback
+                        // "Firecrawl API error". Shaping the synthesized
+                        // envelope like Firecrawl's own {success,error} keeps
+                        // one mapper correct for both.
+                        error: typeof message === "string" && message !== ""
                             ? message
                             : "Firecrawl job " + String(status),
                     },
@@ -431,7 +437,13 @@ export default defineEndpoint({
                         : {}),
                     ...(names.includes("audio") ? { audio: pages } : {}),
                     ...(names.includes("video") ? { video: pages } : {}),
-                    ...(scrape?.redactPII ? { redact_pii: pages } : {}),
+                    // redaction is billed on EVERY parsed page, so a crawl
+                    // that met PDFs redacts more pages than it fetched URLs
+                    // (verified live on /scrape: a 4-page PDF bills 4x4, not
+                    // 1x4). `parsers: []` zeroes extraPdfPages.
+                    ...(scrape?.redactPII
+                        ? { redact_pii: pages + extraPdfPages }
+                        : {}),
                     ...(injection ? { prompt_injection_check: pages } : {}),
                     ...(scrape?.lockdown === true ? { lockdown: pages } : {}),
                     ...(body.zeroDataRetention === true

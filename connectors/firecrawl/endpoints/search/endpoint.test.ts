@@ -143,6 +143,32 @@ Deno.test("firecrawl#search provider error: 402 is data, zero usage", async () =
     assertEquals(result.usage, { credits: {}, evidence: {} });
 });
 
+Deno.test("firecrawl#search: a PDF result bills per page like /scrape does", async () => {
+    const unit = await testSealedUnit("firecrawl#search");
+    const result = await runEndpoint({
+        unit,
+        input: {
+            body: {
+                query: "somatosensory system textbook",
+                categories: ["pdf"],
+                limit: 1,
+                scrapeOptions: { formats: ["markdown"] },
+            },
+        },
+        mode: "replay",
+        fixture: await loadFixture(`${chains}search-pdf-ok.json`),
+    });
+
+    // RECORDED LIVE: one 4-page PDF result, vendor bills 6 — 2 search block +
+    // 1 page + 3 pages beyond the first. Without a pdf_page line the endpoint
+    // derived 3 and reported a false 3-credit mismatch.
+    assertEquals(result.usage, {
+        credits: { default: 6 },
+        evidence: { search_block: 1, scraped_page: 1, pdf_page: 3 },
+    });
+    assertEquals(result.usage.mismatch, undefined);
+});
+
 Deno.test({
     name: "firecrawl#search live (gated on FIRECRAWL_API_KEY)",
     ignore: liveSkip("firecrawl"),

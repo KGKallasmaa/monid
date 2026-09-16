@@ -71,6 +71,52 @@ Deno.test("firecrawl#scrape PDF: pdf_page offsets the page already covered by th
     });
 });
 
+Deno.test("firecrawl#scrape PDF + redactPII: redaction is billed per PARSED PAGE", async () => {
+    const unit = await testSealedUnit("firecrawl#scrape");
+    const result = await runEndpoint({
+        unit,
+        input: {
+            body: {
+                url: "https://css4.pub/2015/textbook/somatosensory.pdf",
+                redactPII: true,
+            },
+        },
+        mode: "replay",
+        fixture: await loadFixture(`${chains}scrape-pdf-redacted-ok.json`),
+    });
+
+    // RECORDED LIVE: 4 parsed pages, vendor bills 20. Redaction covers every
+    // page (4 x 4 = 16), not just the document — counting it once derived 8
+    // and produced a 12-credit false mismatch.
+    assertEquals(result.usage, {
+        credits: { default: 20 },
+        evidence: { page: 1, pdf_page: 3, redact_pii: 4 },
+    });
+    // the whole point: the derived fold now agrees with the vendor's claim
+    assertEquals(result.usage.mismatch, undefined);
+});
+
+Deno.test("firecrawl#scrape parsers: [] opts out, so redaction stays a single page", async () => {
+    const unit = await testSealedUnit("firecrawl#scrape");
+    const result = await runEndpoint({
+        unit,
+        input: {
+            body: {
+                url: "https://css4.pub/2015/textbook/somatosensory.pdf",
+                redactPII: true,
+                parsers: [],
+            },
+        },
+        mode: "replay",
+        fixture: await loadFixture(`${chains}scrape-pdf-redacted-ok.json`),
+    });
+
+    // no parsing -> no pdf_page and nothing extra to redact. The claim still
+    // says 20 (the fixture was recorded WITH parsing), so a mismatch here is
+    // expected and correct: it is the input that changed, not the arithmetic.
+    assertEquals(result.usage.evidence, { page: 1, redact_pii: 1 });
+});
+
 Deno.test("firecrawl#scrape provider error: 402 is data, zero usage", async () => {
     const unit = await testSealedUnit("firecrawl#scrape");
     const result = await runEndpoint({

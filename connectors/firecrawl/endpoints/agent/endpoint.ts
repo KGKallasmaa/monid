@@ -132,7 +132,13 @@ export default defineEndpoint({
                     providerHttpStatus: 200,
                     output: {
                         status,
-                        message: typeof message === "string" && message !== ""
+                        // `error`, NOT `message`: the provider's fromError
+                        // reads $.error, so renaming the key here strands the
+                        // reason in `raw` and publishes the generic fallback
+                        // "Firecrawl API error". Shaping the synthesized
+                        // envelope like Firecrawl's own {success,error} keeps
+                        // one mapper correct for both.
+                        error: typeof message === "string" && message !== ""
                             ? message
                             : "Firecrawl job " + String(status),
                     },

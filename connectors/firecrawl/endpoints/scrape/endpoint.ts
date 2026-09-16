@@ -242,8 +242,14 @@ export default defineEndpoint({
                         : {}),
                     ...(names.includes("audio") ? { audio: pages } : {}),
                     ...(names.includes("video") ? { video: pages } : {}),
+                    // EVERY parsed page is redacted, not just the document.
+                    // Verified live: a 4-page PDF with `redactPII` bills 20 —
+                    // 1 base + 3 extra PDF pages + 4 pages x 4 redaction. A
+                    // per-document count derived 8 and reported a false
+                    // 12-credit mismatch. `parsers: []` zeroes extraPdfPages,
+                    // so opting out of parsing keeps the plain 1-page charge.
                     ...(pages > 0 && body.redactPII
-                        ? { redact_pii: pages }
+                        ? { redact_pii: pages + extraPdfPages }
                         : {}),
                     ...(injection ? { prompt_injection_check: pages } : {}),
                     ...(pages > 0 && body.lockdown === true

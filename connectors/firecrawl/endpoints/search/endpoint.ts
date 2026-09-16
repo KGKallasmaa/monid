@@ -63,6 +63,21 @@ export default defineEndpoint({
                     description: "2 credits per 10 results, rounded up",
                     consumes: { credit: "default", amount: 2 },
                 },
+                /** Covers the SEARCH half only. Whether `enterprise` also puts
+                 *  the +1/page ZDR surcharge on the resulting scrapes is
+                 *  UNRESOLVED, and deliberately not modeled: the vendor's own
+                 *  Search page says both "the `enterprise` parameter
+                 *  automatically enforces ZDR for any resulting scrapes" and,
+                 *  three paragraphs earlier, "the `enterprise` parameter only
+                 *  applies to the search portion of the request" — while its
+                 *  Cost Implications table lists no ZDR line among the scrape
+                 *  costs. A live probe would settle it in one call (baseline
+                 *  `limit:1` + scrapeOptions bills 3, so 4 would prove the
+                 *  surcharge), but the key is refused: "Zero Data Retention
+                 *  (ZDR) search is not enabled for your team." Until it can be
+                 *  observed, the estimate under-holds by `limit` on an
+                 *  enterprise+scrape run rather than inventing a charge; the
+                 *  vendor's `creditsUsed` still settles the bill correctly. */
                 zdr_search: {
                     kind: UsageModelKind.PER_UNIT,
                     unit: Unit.RESULT,
@@ -117,11 +132,20 @@ export default defineEndpoint({
                     description: "video extraction on each scraped result",
                     consumes: { credit: "default", amount: 4 },
                 },
+                pdf_page: {
+                    kind: UsageModelKind.PER_UNIT,
+                    unit: Unit.PAGE,
+                    label: "PDF pages",
+                    description: "each parsed PDF page beyond the first, on " +
+                        "any result scraped via scrapeOptions",
+                    consumes: { credit: "default", amount: 1 },
+                },
                 redact_pii: {
                     kind: UsageModelKind.PER_UNIT,
                     unit: Unit.PAGE,
                     label: "PII redaction",
-                    description: "redaction on each scraped result",
+                    description: "redaction on every parsed page of each " +
+                        "scraped result, PDF pages included",
                     consumes: { credit: "default", amount: 4 },
                 },
                 prompt_injection_check: {
@@ -260,6 +284,11 @@ export default defineEndpoint({
             }
             const scraped = scrape === undefined ? 0 : results;
             let xResults = 0;
+            // PDF pages are billed per page on a scraped result exactly as on
+            // /scrape (vendor: "PDF parsing: 1 credit per PDF page"). Verified
+            // live: a search returning one 4-page PDF billed 6 — 2 search + 1
+            // page + 3 extra PDF pages — while omitting this line derived 3.
+            let extraPdfPages = 0;
             for (const source of ["web", "images", "news"]) {
                 const rows = utils.json.optionalGet(
                     data.output,
@@ -267,6 +296,13 @@ export default defineEndpoint({
                 );
                 if (!Array.isArray(rows)) continue;
                 for (const row of rows) {
+                    if (scraped > 0 && scrape?.parsers?.length !== 0) {
+                        const parsed = utils.json.optionalNum(
+                            row,
+                            "$.metadata.numPages",
+                        ) ?? 0;
+                        extraPdfPages += Math.max(0, parsed - 1);
+                    }
                     const url = utils.json.optionalGet(row, "$.url");
                     if (typeof url !== "string") continue;
                     const host = url.toLowerCase()
@@ -302,8 +338,9 @@ export default defineEndpoint({
                     ...(scraped > 0 && names.includes("video")
                         ? { video: scraped }
                         : {}),
+                    // redaction covers every parsed page, PDF pages included
                     ...(scraped > 0 && scrape?.redactPII
-                        ? { redact_pii: scraped }
+                        ? { redact_pii: scraped + extraPdfPages }
                         : {}),
                     ...(scraped > 0 && injection
                         ? { prompt_injection_check: scraped }
@@ -317,6 +354,7 @@ export default defineEndpoint({
                     ...(scraped > 0 && xResults > 0
                         ? { x_routing: xResults }
                         : {}),
+                    ...(extraPdfPages > 0 ? { pdf_page: extraPdfPages } : {}),
                 },
             };
         },

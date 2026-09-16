@@ -159,6 +159,15 @@ for (const id of PAGE_JOBS) {
         assertEquals(result.providerHttpStatus, 200);
         assertEquals(result.isProviderError, true);
         assertEquals(result.usage, { credits: {}, evidence: {} });
+
+        // and the REASON survives into the public message. The poll must emit
+        // the vendor's own `error` key: renaming it to `message` strands the
+        // reason in `raw` and publishes the provider's generic fallback, since
+        // output.fromError reads $.error.
+        assertEquals(
+            (result.output as { message: string }).message,
+            "Crawl failed: the start URL could not be reached",
+        );
     });
 
     Deno.test(`${id} submit rejected: a 402 on submit is data, never a job`, async () => {
