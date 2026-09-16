@@ -26,8 +26,6 @@ Deno.test(`${ID} happy (synthetic): 4 row(s) ⇒ max(50, 23 × 4) = 92 units`, a
     assertEquals(result.httpStatus, 200);
     assertEquals(result.output, fixture.calls[0].res.body);
     assertEquals(result.isProviderError, false);
-    // no fixture meter ⇒ the derived fold IS usage; zUsage is strict, so
-    // deep equality proves there is no `mismatch` key
     assertEquals(result.usage, {
         "credits": { "default": 92 },
         "evidence": { "rows": 4, "minimum_top_up": 0 },
