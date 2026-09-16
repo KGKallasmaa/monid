@@ -1,0 +1,169 @@
+import { assert, assertEquals, assertRejects } from "@std/assert";
+import type { Json } from "@shared/core";
+import { fromFileUrl } from "@std/path";
+import {
+    liveSkip,
+    loadFixture,
+    runEndpoint,
+    testBundle,
+    testSealedUnit,
+} from "@shared/testing";
+
+const fixturesDir = fromFileUrl(new URL("../../fixtures/", import.meta.url));
+
+Deno.test("keenable: both docs inherit PER_CALL 1, one auth fn, synthesized quantities, no consolidate", async () => {
+    const bundle = await testBundle();
+    const ids = Object.keys(bundle.endpoints).filter((id) =>
+        id.startsWith("keenable#")
+    ).sort();
+    assertEquals(ids, ["keenable#fetch", "keenable#search"]);
+
+    const search = bundle.endpoints["keenable#search"];
+    const fetchDoc = bundle.endpoints["keenable#fetch"];
+    assertEquals(search.request.method, "POST");
+    assertEquals(search.request.url, "https://api.keenable.ai/v1/search");
+    assertEquals(fetchDoc.request.method, "GET");
+    assertEquals(fetchDoc.request.url, "https://api.keenable.ai/v1/fetch");
+
+    assertEquals(search.auth.inject.$fn.key, fetchDoc.auth.inject.$fn.key);
+    assertEquals(search.usage.consolidate, undefined);
+    assertEquals(fetchDoc.usage.consolidate, undefined);
+    assertEquals(search.input.toRequest, undefined);
+    assertEquals(fetchDoc.input.toRequest, undefined);
+
+    // flat PER_CALL: compiler-synthesized empty quantities (tinyfish/pdl
+    // enrich posture); engine appends CALL at settle
+    const synthesizedKey = search.usage.evidence.$fn.key;
+    assertEquals(search.usage.estimate.$fn.key, synthesizedKey);
+    assertEquals(fetchDoc.usage.evidence.$fn.key, synthesizedKey);
+    assertEquals(fetchDoc.usage.estimate.$fn.key, synthesizedKey);
+    assertEquals(
+        bundle.fnTable[synthesizedKey].provenance,
+        "core#usage.synthesizedEmpty",
+    );
+
+    for (const id of ids) {
+        const doc = bundle.endpoints[id];
+        assertEquals(Object.keys(doc.usage.credits), ["default"], id);
+        const model = doc.usage.model;
+        assertEquals(model.kind, "PER_CALL", id);
+        assertEquals(
+            "consumes" in model ? model.consumes : undefined,
+            { credit: "default", amount: 1 },
+            id,
+        );
+    }
+});
+
+Deno.test("keenable#search happy (synthetic): one credit; fold settles; mode rides the payload", async () => {
+    const unit = await testSealedUnit("keenable#search");
+    const fixture = await loadFixture(`${fixturesDir}synthetic-search-ok.json`);
+    const result = await runEndpoint({
+        unit,
+        input: { body: { query: "typescript best practices", max_results: 2 } },
+        mode: "replay",
+        fixture,
+    });
+    assertEquals(result.httpStatus, 200);
+    assertEquals(result.isProviderError, false);
+    // no consolidate ⇒ no claim ⇒ the DERIVED fold is the bill (D2)
+    assertEquals(result.usage, {
+        credits: { default: 1 },
+        evidence: { CALL: 1 },
+    });
+    const output = result.output as Record<string, unknown>;
+    assertEquals(output.query, "typescript best practices");
+    assertEquals(output.mode, "pro");
+    assertEquals((output.results as unknown[]).length, 2);
+});
+
+Deno.test("keenable#search provider error (recorded 401): data, zero usage", async () => {
+    const unit = await testSealedUnit("keenable#search");
+    const fixture = await loadFixture(`${fixturesDir}unauthorized-search.json`);
+    const result = await runEndpoint({
+        unit,
+        input: { body: { query: "anything" } },
+        mode: "replay",
+        fixture,
+    });
+    assertEquals(result.httpStatus, 401);
+    assertEquals(result.isProviderError, true);
+    assertEquals(result.usage, { credits: {}, evidence: {} });
+    assertEquals(result.output, {
+        error: "Authentication failed",
+        message: "Malformed API key",
+    });
+});
+
+Deno.test("keenable#search: query required; bounds; mode is not a request field", async () => {
+    const unit = await testSealedUnit("keenable#search");
+    const fixture = await loadFixture(`${fixturesDir}synthetic-search-ok.json`);
+    const rejected: Json[] = [
+        {},
+        { query: "" },
+        { query: "x", max_results: 0 },
+        { query: "x", max_results: 51 },
+        { query: "x", snippet_max_length: 179 },
+        { query: "x", snippet_max_length: 10001 },
+        // design D3: mode is not on the REST body; .strict() rejects it
+        { query: "x", mode: "pro" },
+        { query: "x", bogus: 1 },
+    ];
+    for (const body of rejected) {
+        await assertRejects(
+            () =>
+                runEndpoint({ unit, input: { body }, mode: "replay", fixture }),
+            Error,
+            "INVALID_INPUT",
+            JSON.stringify(body),
+        );
+    }
+    // date filters and site are optional and pass through
+    const ok = await runEndpoint({
+        unit,
+        input: {
+            body: {
+                query: "typescript best practices",
+                site: "arxiv.org",
+                published_after: "2026-01-01",
+                max_results: 2,
+            },
+        },
+        mode: "replay",
+        fixture,
+    });
+    assertEquals(ok.isProviderError, false);
+});
+
+Deno.test({
+    name: "keenable#search live (gated on KEENABLE_API_KEY)",
+    ignore: liveSkip("keenable"),
+    fn: async () => {
+        const unit = await testSealedUnit("keenable#search");
+        const result = await runEndpoint({
+            unit,
+            input: {
+                body: {
+                    query: "deno 2 workspace monorepo guide",
+                    max_results: 2,
+                },
+            },
+            mode: "live",
+        });
+        assertEquals(
+            result.isProviderError,
+            false,
+            JSON.stringify(result.output),
+        );
+        assertEquals(result.usage, {
+            credits: { default: 1 },
+            evidence: { CALL: 1 },
+        });
+        const output = result.output as Record<string, unknown>;
+        assert(
+            Array.isArray(output.results),
+            "results array present",
+        );
+        assertEquals(output.query, "deno 2 workspace monorepo guide");
+    },
+});
