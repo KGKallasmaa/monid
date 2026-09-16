@@ -1,5 +1,8 @@
 # Proposal: add-connector-ahrefs
 
+Stack scope: 21 endpoints in PR #20 and 15 in PR #21. Counts and
+completion below describe the combined authored connector.
+
 ## Why
 
 Ahrefs (ahrefs.com) is a live v1 monid-services provider — 36 synchronous

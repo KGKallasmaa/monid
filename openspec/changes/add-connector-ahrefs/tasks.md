@@ -1,5 +1,8 @@
 # Tasks: add-connector-ahrefs
 
+Stack scope: 21 endpoints in PR #20 and 15 in PR #21. Counts and
+completion below describe the combined authored connector.
+
 ## 1. Provider + shared schema
 
 - [x] 1.1 provider.ts: bearer auth, v3 baseUrl + Accept header, timeouts
@@ -53,6 +56,13 @@
       recording. Live header verification remains in 3.4.
 - [ ] 4.2 Broker: decide whether the 50-unit request minimum passes to the
       caller (the doc now reports it; v1 absorbed it — D1)
+
+- [ ] 4.3 Consider additional vendor report controls beyond the v1 input
+      surface: broken-backlinks aggregation; top-pages date_compared,
+      volume_mode, traffic_mode; pages-by-traffic volume_mode/traffic_mode;
+      refdomains history. Confirm their output/field-cost effects before
+      extending the fixed-field contract. Keep filter identifiers restricted
+      to the priced field set; any vendor-only aliases need a cost-aware map.
 
 ## 5. Docs + verify
 
