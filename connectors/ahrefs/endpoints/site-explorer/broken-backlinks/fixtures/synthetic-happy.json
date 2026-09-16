@@ -1,6 +1,6 @@
 {
     "name": "synthetic-happy",
-    "description": "Synthetic (no AHREFS key held at port time, 2026-09-16): body shape from the v1 adaptor tests (`{ <collection>: [...] }` for rowed reports, `{ <name>: {...} }` for snapshots); field values are placeholders. Unverified against live traffic — replace via `deno task record`. 3 row(s) back — usage is max(50, 9 × 3) units, split into the rows line and the request-minimum top-up.",
+    "description": "Synthetic (no AHREFS key held at port time, 2026-09-16): body shape from the v1 adaptor tests (`{ <collection>: [...] }` for rowed reports, `{ <name>: {...} }` for snapshots); field values are placeholders. Unverified against live traffic \u2014 replace via `deno task record`. 3 row(s) back \u2014 usage is max(50, 9 \u00d7 3) units, split into the rows line and the request-minimum top-up. Response field names/types checked against the official endpoint reference on 2026-09-16; values remain synthetic.",
     "calls": [
         {
             "req": {
@@ -17,9 +17,9 @@
                             "anchor": "anchor 0",
                             "title": "title 0",
                             "domain_rating_source": 10,
-                            "first_seen": "2026-08-13",
-                            "http_code_target": 10,
-                            "redirect_code": 10,
+                            "first_seen": "2026-08-13T00:00:00Z",
+                            "http_code_target": 404,
+                            "redirect_code": 301,
                             "is_dofollow": true
                         },
                         {
@@ -28,9 +28,9 @@
                             "anchor": "anchor 1",
                             "title": "title 1",
                             "domain_rating_source": 20,
-                            "first_seen": "2026-08-13",
-                            "http_code_target": 20,
-                            "redirect_code": 20,
+                            "first_seen": "2026-08-13T00:00:00Z",
+                            "http_code_target": 404,
+                            "redirect_code": 301,
                             "is_dofollow": true
                         },
                         {
@@ -39,9 +39,9 @@
                             "anchor": "anchor 2",
                             "title": "title 2",
                             "domain_rating_source": 30,
-                            "first_seen": "2026-08-13",
-                            "http_code_target": 30,
-                            "redirect_code": 30,
+                            "first_seen": "2026-08-13T00:00:00Z",
+                            "http_code_target": 404,
+                            "redirect_code": 301,
                             "is_dofollow": true
                         }
                     ]

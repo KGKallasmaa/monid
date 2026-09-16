@@ -1,6 +1,6 @@
 {
     "name": "synthetic-happy",
-    "description": "Synthetic (no AHREFS key held at port time, 2026-09-16): body shape from the v1 adaptor tests (`{ <collection>: [...] }` for rowed reports, `{ <name>: {...} }` for snapshots); field values are placeholders. Unverified against live traffic — replace via `deno task record`. 3 row(s) back — usage is max(50, 14 × 3) units, split into the rows line and the request-minimum top-up.",
+    "description": "Synthetic (no AHREFS key held at port time, 2026-09-16): body shape from the v1 adaptor tests (`{ <collection>: [...] }` for rowed reports, `{ <name>: {...} }` for snapshots); field values are placeholders. Unverified against live traffic \u2014 replace via `deno task record`. 3 row(s) back \u2014 usage is max(50, 14 \u00d7 3) units, split into the rows line and the request-minimum top-up. Response field names/types checked against the official endpoint reference on 2026-09-16; values remain synthetic.",
     "calls": [
         {
             "req": {
@@ -12,21 +12,21 @@
                 "body": {
                     "competitors": [
                         {
-                            "competitor_domain": "https://example-0.test/",
+                            "competitor_domain": "example-0.test",
                             "domain_rating": 10,
                             "keywords_common": 10,
                             "share": 10,
                             "traffic": 10
                         },
                         {
-                            "competitor_domain": "https://example-1.test/",
+                            "competitor_domain": "example-1.test",
                             "domain_rating": 20,
                             "keywords_common": 20,
                             "share": 20,
                             "traffic": 20
                         },
                         {
-                            "competitor_domain": "https://example-2.test/",
+                            "competitor_domain": "example-2.test",
                             "domain_rating": 30,
                             "keywords_common": 30,
                             "share": 30,

@@ -1,6 +1,6 @@
 {
     "name": "synthetic-happy",
-    "description": "Synthetic (no AHREFS key held at port time, 2026-09-16): body shape from the v1 adaptor tests (`{ <collection>: [...] }` for rowed reports, `{ <name>: {...} }` for snapshots); field values are placeholders. Unverified against live traffic — replace via `deno task record`. 3 row(s) back — usage is max(50, 10 × 3) units, split into the rows line and the request-minimum top-up.",
+    "description": "Synthetic (no AHREFS key held at port time, 2026-09-16): body shape from the v1 adaptor tests (`{ <collection>: [...] }` for rowed reports, `{ <name>: {...} }` for snapshots); field values are placeholders. Unverified against live traffic \u2014 replace via `deno task record`. 3 row(s) back \u2014 usage is max(50, 10 \u00d7 3) units, split into the rows line and the request-minimum top-up. Response field names/types checked against the official endpoint reference on 2026-09-16; values remain synthetic.",
     "calls": [
         {
             "req": {
@@ -17,11 +17,11 @@
                             "anchor": "anchor 0",
                             "title": "title 0",
                             "domain_rating_source": 10,
-                            "url_rating_source": "https://example-0.test/",
-                            "first_seen": "2026-08-13",
-                            "last_seen": "2026-08-13",
+                            "url_rating_source": 10,
+                            "first_seen": "2026-08-13T00:00:00Z",
+                            "last_seen": "2026-08-13T00:00:00Z",
                             "is_dofollow": true,
-                            "link_type": "link_type 0"
+                            "link_type": "text"
                         },
                         {
                             "url_from": "https://example-1.test/",
@@ -29,11 +29,11 @@
                             "anchor": "anchor 1",
                             "title": "title 1",
                             "domain_rating_source": 20,
-                            "url_rating_source": "https://example-1.test/",
-                            "first_seen": "2026-08-13",
-                            "last_seen": "2026-08-13",
+                            "url_rating_source": 20,
+                            "first_seen": "2026-08-13T00:00:00Z",
+                            "last_seen": "2026-08-13T00:00:00Z",
                             "is_dofollow": true,
-                            "link_type": "link_type 1"
+                            "link_type": "text"
                         },
                         {
                             "url_from": "https://example-2.test/",
@@ -41,11 +41,11 @@
                             "anchor": "anchor 2",
                             "title": "title 2",
                             "domain_rating_source": 30,
-                            "url_rating_source": "https://example-2.test/",
-                            "first_seen": "2026-08-13",
-                            "last_seen": "2026-08-13",
+                            "url_rating_source": 30,
+                            "first_seen": "2026-08-13T00:00:00Z",
+                            "last_seen": "2026-08-13T00:00:00Z",
                             "is_dofollow": true,
-                            "link_type": "link_type 2"
+                            "link_type": "text"
                         }
                     ]
                 }

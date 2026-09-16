@@ -1,5 +1,8 @@
 # ahrefs-connector (delta)
 
+Stack scope: 21 endpoints in PR #20 and 15 in PR #21. Counts and
+completion below describe the combined authored connector.
+
 ## ADDED Requirements
 
 ### Requirement: Ahrefs provider definition with one API-unit pool

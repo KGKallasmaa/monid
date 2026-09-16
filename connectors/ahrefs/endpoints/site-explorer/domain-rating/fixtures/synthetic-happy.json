@@ -1,6 +1,6 @@
 {
     "name": "synthetic-happy",
-    "description": "Synthetic (no AHREFS key held at port time, 2026-09-16): body shape from the v1 adaptor tests (`{ <collection>: [...] }` for rowed reports, `{ <name>: {...} }` for snapshots); field values are placeholders. Unverified against live traffic — replace via `deno task record`. 1 row(s) back — usage is max(50, 2 × 1) units, split into the rows line and the request-minimum top-up.",
+    "description": "Synthetic (no AHREFS key held at port time, 2026-09-16): body shape from the v1 adaptor tests (`{ <collection>: [...] }` for rowed reports, `{ <name>: {...} }` for snapshots); field values are placeholders. Unverified against live traffic \u2014 replace via `deno task record`. 1 row(s) back \u2014 usage is max(50, 2 \u00d7 1) units, split into the rows line and the request-minimum top-up. Response field names/types checked against the official endpoint reference on 2026-09-16; values remain synthetic.",
     "calls": [
         {
             "req": {
@@ -11,8 +11,8 @@
                 "status": 200,
                 "body": {
                     "domain_rating": {
-                        "value_a": 42,
-                        "value_b": 42
+                        "ahrefs_rank": 42,
+                        "domain_rating": 42
                     }
                 }
             }
