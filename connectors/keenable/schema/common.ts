@@ -5,7 +5,8 @@ import { z } from "zod";
  * SearchRequest + docs "Date and time filters", 2026-09-16). A single
  * string: the three spellings cannot be a JSON-Schema union without
  * dropping the relative form, so the formats live in the describe and
- * Keenable itself 400s a bad value.
+ * Keenable itself 400s a bad value. Tightening (`.min`) lives at the
+ * binding, not on this mirror.
  */
 export const TIME_BOUND_FORMAT =
     "YYYY-MM-DD (whole day UTC: an _after bound starts at 00:00:00, a " +
@@ -13,6 +14,4 @@ export const TIME_BOUND_FORMAT =
     "offset means UTC), or a relative delta such as 7d, 30min, 6mo, 1y " +
     "(units: min, h, d, mo, y; truncated to the minute).";
 
-export const zKeenableTimeBound = z.string().min(1).describe(
-    TIME_BOUND_FORMAT,
-);
+export const zKeenableTimeBound = z.string().describe(TIME_BOUND_FORMAT);

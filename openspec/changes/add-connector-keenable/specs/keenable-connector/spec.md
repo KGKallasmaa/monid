@@ -27,15 +27,16 @@ provider-level `usage.model` of PER_CALL 1 Keenable credit, and NO
   `{error, message}` rides through
 
 ### Requirement: Two authenticated endpoints
-The connector SHALL provide `POST /v1/search` (`keenable#search`,
-`web-search`) and `GET /v1/fetch` (`keenable#fetch`, `web-scraping`).
-Search input SHALL be a strict body: `query` required; `site`,
+The connector SHALL provide `POST /v1/search` (`keenable#v1/search`,
+`web-search`) and `GET /v1/fetch` (`keenable#v1/fetch`, `web-scraping`).
+Search input SHALL be a loose body: `query` required; `site`,
 `acquired_after`/`acquired_before`, `published_after`/`published_before`,
 `query_time`, `snippet_max_length` (180–10000), `max_results` (1–50)
-optional; `mode` SHALL fail INVALID_INPUT. Fetch input SHALL be strict
-query params: `url` required (URI); `max_chars` (≥1), `live`
-(boolean), `prompt` (1–2000 characters) optional. The keyless `/public`
-twins SHALL NOT be exposed.
+optional; unspecified keys SHALL pass through; `mode` SHALL fail
+INVALID_INPUT. Fetch input SHALL be strict query params: `url` required
+(URI); `max_chars` (≥1), `prompt` (1–2000 characters) optional; `live`
+SHALL NOT be a request field. The keyless `/public` twins SHALL NOT be
+exposed.
 
 #### Scenario: Search mode is not a request field
 - **WHEN** `POST /v1/search` is called with a body carrying `mode`
@@ -44,4 +45,8 @@ twins SHALL NOT be exposed.
 #### Scenario: Fetch url is required
 - **WHEN** `GET /v1/fetch` is called without `url`, or with a string
   that is not a URI
+- **THEN** the run fails INVALID_INPUT
+
+#### Scenario: Live fetch is not exposed
+- **WHEN** `GET /v1/fetch` is called with `live`
 - **THEN** the run fails INVALID_INPUT

@@ -11,14 +11,13 @@ engine capability. The published surface is small and stable
 ## What Changes
 
 - **connectors/keenable** — 2 endpoints, `X-API-Key` auth, 30 s timeouts:
-  - `keenable#search` (`POST /v1/search`, identity pinned `/search`):
-    ranked results with title, URL, description, snippet, publication
-    and index timestamps; site / date / point-in-time filters; snippet
-    length and result-count caps. PER_CALL, 1 Keenable credit.
-  - `keenable#fetch` (`GET /v1/fetch`, identity pinned `/fetch`):
-    markdown for a known URL (indexed copy by default; `live=true`
-    fetches from the source); optional `max_chars` and a `prompt`
-    extraction instruction. PER_CALL, 1 Keenable credit.
+  - `keenable#v1/search` (`POST /v1/search`): ranked results with title,
+    URL, description, snippet, publication and index timestamps; site /
+    date / point-in-time filters; snippet length and result-count caps.
+    PER_CALL, 1 Keenable credit.
+  - `keenable#v1/fetch` (`GET /v1/fetch`): markdown for a known indexed
+    URL; optional `max_chars` and a `prompt` extraction instruction.
+    PER_CALL, 1 Keenable credit. Live fetch is not exposed (D4).
 - **One credit pool** `default` ("Keenable credits") and a provider-level
   `PER_CALL` model inherited by both docs. No `usage.consolidate`: REST
   responses carry no usage receipt (MCP's `_meta["keenable/usage"]` is
@@ -39,9 +38,9 @@ engine capability. The published surface is small and stable
 - Search `mode` (realtime vs pro) as a request field — Keenable decides
   it per call; MCP `_meta["keenable/overrides"]` is not an HTTP
   parameter.
-- A `fetch.live` surcharge — published as a different SKU that "draws
-  more than one" credit without a number, and REST has no receipt to
-  settle against.
+- Live fetch (`live=true` / `fetch.live`) — a different SKU that "draws
+  more than one" credit without a published number, and REST has no
+  receipt to settle against.
 
 ## Impact
 

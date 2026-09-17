@@ -25,11 +25,10 @@ export default defineProvider({
         summary: "Low-latency web search and clean page fetch for AI agents.",
         description: "Web search and page fetch built for AI agents — " +
             "ranked results that already carry extracted page text, plus a " +
-            "fetch that returns any indexed URL as clean markdown (or a " +
-            "live fetch from the source). Filter search by site, " +
-            "publication date, and when Keenable indexed the page; fetch " +
-            "can optionally run an extraction instruction instead of " +
-            "returning the whole page.",
+            "fetch that returns any indexed URL as clean markdown. Filter " +
+            "search by site, publication date, and when Keenable indexed " +
+            "the page; fetch can optionally run an extraction instruction " +
+            "instead of returning the whole page.",
         homepageUrl: "https://keenable.ai",
         docsUrl: "https://docs.keenable.ai",
         categories: ["web-search"],
@@ -39,10 +38,11 @@ export default defineProvider({
     timeouts: { requestMs: 30_000, runMs: 30_000 },
     usage: {
         /** THE credit system (design D26): Keenable's native meter is
-         *  credits, one per search or fetch. Search mode (realtime vs
-         *  pro) and live fetch are separate SKUs, but the published
-         *  rule is still one credit per call (design D2/D4). No
-         *  `consolidate`: no REST body carries a receipt. */
+         *  credits, one per search or indexed fetch. Search mode
+         *  (realtime vs pro) is not request-selectable (D3). Live
+         *  fetch is a separate unpublished-amount SKU, so `live` is
+         *  not on the catalog (D4). No `consolidate`: no REST body
+         *  carries a receipt. */
         credits: { default: { label: "Keenable credits" } },
         model: {
             kind: UsageModelKind.PER_CALL,

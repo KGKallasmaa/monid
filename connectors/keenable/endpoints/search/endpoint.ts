@@ -31,10 +31,19 @@ export default defineEndpoint({
             "does not expose.",
         ],
     },
-    /** PUBLIC identity (design D22): request.path is `/v1/search`; pin
-     *  `/search` so the catalog id is `keenable#search` like exa/tinyfish
-     *  rather than leaking the vendor version prefix. */
-    endpoint: "/search",
     request: { method: "POST", path: "/v1/search" },
-    input: { schema: { body: zKeenableSearchBody } },
+    input: {
+        schema: {
+            body: zKeenableSearchBody.extend({
+                query: zKeenableSearchBody.shape.query.min(1),
+                site: zKeenableSearchBody.shape.site.unwrap().min(1)
+                    .optional(),
+                snippet_max_length: zKeenableSearchBody.shape
+                    .snippet_max_length.unwrap().min(180).max(10000)
+                    .optional(),
+                max_results: zKeenableSearchBody.shape.max_results
+                    .unwrap().min(1).max(50).optional(),
+            }),
+        },
+    },
 });

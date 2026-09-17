@@ -14,10 +14,9 @@ catalog is a metered, keyed surface. The public twins are an evaluation
 tier with a different auth header, different rate-limit identity, and
 no usage — exposing them would be a second provider with a different
 auth inject and a FREE model, which is its own change if anyone wants
-it. Both docs call the keyed paths. Public identity is pinned
-(`endpoint: "/search"` / `"/fetch"`) so the catalog ids are
-`keenable#search` and `keenable#fetch` — the `/v1` prefix is a vendor
-URL fact, not a caller-facing name (tinyfish's D22 form).
+it. Both docs call the keyed paths. Identity is inferred from
+`request.path` (design D22): `keenable#v1/search` and
+`keenable#v1/fetch`. No authored `endpoint:` pin.
 
 ## D2 — One pool, PER_CALL 1, no consolidate
 
@@ -48,25 +47,26 @@ the mode is decided per call." OpenAPI SearchRequest has no `mode`.
 The Python SDK documents a `mode` argument; that is not the HTTP
 surface this connector speaks.
 
-The search body is `.strict()`, so a payload that includes `mode`
-fails INVALID_INPUT rather than being dropped on the floor or sent
-and 400'd upstream. The response may echo `mode` (`"pro"` observed on
-the public twin 2026-09-16); it rides the payload, unused by billing.
+The search body is `z.looseObject` so unspecified vendor-forward keys
+ride through, plus `mode: z.never().optional()` so a payload that
+includes `mode` fails INVALID_INPUT rather than being dropped on the
+floor or sent and 400'd upstream. The response may echo `mode` (`"pro"`
+observed on the public twin 2026-09-16); it rides the payload, unused
+by billing.
 
-## D4 — `fetch.live` stays PER_CALL 1
+## D4 — `fetch.live` is not on the catalog
 
 `live=true` is a documented query param and a separate SKU
 (`fetch.live`) that "draws more than one credit per call". No number is
-published; prices are "per-organization"; REST has no receipt. Inventing
-a surcharge would make every live estimate a guess that cannot
-mismatch-detect. The doc bills 1 on every 2xx, indexed or live, and
-says so in `meta.notes`. A published rate or a REST usage field is a
-follow-up (tasks 3.3).
+published; prices are "per-organization"; REST has no receipt. Exposing
+`live` under the provider PER_CALL of 1 would undercount every live
+fetch. The catalog fetch is indexed-only: `live` is not a request
+parameter. A published rate or a REST usage field is a follow-up
+(tasks 3.4).
 
 ## D5 — Fixtures: recorded 401, synthetic happy
 
-A malformed key against the keyed paths (2026-09-16,
-`X-API-Key: keen_invalid`) returned HTTP 401
+A malformed key against the keyed paths (2026-09-16) returned HTTP 401
 `{error: "Authentication failed", message: "Malformed API key"}` on
 both endpoints. Auth docs table lists malformed keys as 400; the live
 keyed endpoint answered 401. Those two chains are recordings.

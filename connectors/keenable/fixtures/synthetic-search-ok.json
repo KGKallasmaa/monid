@@ -1,6 +1,6 @@
 {
     "name": "synthetic-search-ok",
-    "description": "SYNTHETIC happy chain for keenable#search. Shape taken from a real 2026-09-16 POST /v1/search/public response (query, mode, results[].title/url/description/snippet/published_at/acquired_at); URL rewritten to the authenticated /v1/search the doc calls. Snippets hand-truncated. Replace via `deno task record` when KEENABLE_API_KEY exists.",
+    "description": "SYNTHETIC happy chain for keenable#v1/search. Shape taken from a real 2026-09-16 POST /v1/search/public response (query, mode, results[].title/url/description/snippet/published_at/acquired_at); URL rewritten to the authenticated /v1/search the doc calls. Snippets hand-truncated. Replace via `deno task record` when KEENABLE_API_KEY exists.",
     "calls": [
         {
             "req": {
